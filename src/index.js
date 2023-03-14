@@ -1,3 +1,4 @@
-import { Tooltip, Toast, Popover } from 'bootstrap';
-console.log("Hello World!");
+import './style.css';
+import init from "./init.js";
 
+init();

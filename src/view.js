@@ -1,29 +1,89 @@
 import onChange from 'on-change';
-const renderErrors = (element, error, i18nInstance) => {
-  if (element.nextElementSibling) {
-    element.nextElementSibling.remove();
+import axios from 'axios';
+import parse from './parse.js';
+import { renderRssFeed, initRssFeed, initRssPosts, normalizeData, renderRssPosts } from "./renderRss.js";
+
+const renderErrors = (elements, error, i18nInstance) => {
+  elements.input.classList.remove('is-invalid');
+  elements.feedback.classList.remove('text-success');
+  elements.feedback.classList.remove('text-danger');
+  if (error ) {
+    elements.input.classList.add('is-invalid');
+    elements.feedback.classList.add('text-danger');
+    elements.feedback.textContent = i18nInstance.t(error);
   }
-  element.classList.remove('is-invalid');
-  if (error) {
-    console.log(element);
-    element.classList.add('is-invalid');
-    const feedback = document.createElement('p');
-    feedback.classList.add('invalid-feedback');
-    feedback.textContent = i18nInstance.t(error);
-    element.after(feedback);
+};
+
+const watchState = (state, elements, i18nInstance) => {
+  switch (state) {
+    case 'sending':
+      elements.input.classList.remove('is-invalid');
+      elements.feedback.classList.remove('text-success');
+      elements.feedback.classList.remove('text-danger');
+      elements.feedback.textContent = '';
+      elements.submitBtn.disabled = true;
+      break;
+
+    case 'error':
+      elements.submitBtn.disabled = false;
+      break;
+
+    case 'filling':
+      elements.input.classList.remove('is-invalid');
+      elements.feedback.classList.remove('text-danger');
+      elements.feedback.classList.remove('text-success')
+      elements.feedback.classList.add('text-success');
+      elements.feedback.textContent = i18nInstance.t('success');
+      elements.submitBtn.disabled = false;
+      break;
   }
 };
 
 export default (state, elements, i18nInstance) => {
-  const watchedState = onChange(state, (processState, value) => {
-    console.log(value, 'elements', processState, 'process');
-    switch (processState) {
+  const watchedState = onChange(state, ( path, value) => {
+    console.log(path, 'path', value, 'p');
+    switch (path) {
       case 'form.processError':
-        renderErrors(elements.input, watchedState.form.processError, i18nInstance);
+        renderErrors(elements,watchedState.form.processError, i18nInstance)
+        break;
+
+      case 'form.valid':
+        initRssFeed(elements, i18nInstance);
+        initRssPosts(elements, i18nInstance);
+        break;
+
+      case 'form.fields.currentUrl':
+        axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${watchedState.form.fields.currentUrl}`)}`)
+          .then((response) => {
+            const data = parse(response.data.contents, watchedState);
+            if (data !== null) {
+              watchedState.form.processState = "filling";
+              if (watchedState.form.valid === false) {
+                watchedState.form.valid = true;
+              }
+            }
+            normalizeData(data, watchedState);
+          })
+          .catch((error) => {
+            watchedState.form.processError = error;
+          })
+        break;
+
+      case 'form.fields.feeds':
+        renderRssFeed(value, watchedState, elements.feeds);
+        break;
+
+      case 'form.fields.posts':
+        renderRssPosts(value, watchedState, elements.posts, i18nInstance);
+        break;
+
+      case 'form.processState':
+        watchState(watchedState.form.processState, elements, i18nInstance);
         break;
 
       default:
-        throw new Error(`Unknown process state: ${processState}`);
+        break;
+        // throw new Error(`Unknown process state: ${watchedState.form.processState}`);
     }
   });
   return watchedState;

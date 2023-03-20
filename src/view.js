@@ -62,15 +62,6 @@ const watchState = (state, elements, i18nInstance) => {
       elements.submitBtn.disabled = true;
       break;
 
-    // case 'success':
-    //   elements.input.classList.remove('is-invalid');
-    //   elements.feedback.classList.remove('text-danger');
-    //   elements.feedback.classList.remove('text-success')
-    //   elements.feedback.classList.add('text-success');
-    //   elements.feedback.textContent = i18nInstance.t('success');
-    //   elements.submitBtn.disabled = false;
-    //   break;
-
     case 'error':
       elements.submitBtn.disabled = false;
       break;

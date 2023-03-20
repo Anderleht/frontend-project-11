@@ -19,10 +19,10 @@ export const renderRssFeed = (rssFeed, watchedState, body) => {
   })
 };
 
-export const renderRssPosts = (rssPosts, watchedState, body, i18nInstance) => {
+export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) => {
   rssPosts.forEach((currentPost) => {
     if (!watchedState.form.fields.renderedPosts.includes(currentPost)) {
-      const bodyPosts = body.querySelector('.list-group');
+      const bodyPosts = elements.posts.querySelector('.list-group');
       const postLi = document.createElement('li');
       postLi.classList.add('list-group-item', 'border-0', 'border-end-0', 'd-flex', 'justify-content-between', 'align-items-start');
       const a = document.createElement('a');
@@ -32,12 +32,23 @@ export const renderRssPosts = (rssPosts, watchedState, body, i18nInstance) => {
       a.setAttribute('target', '_blank');
       a.setAttribute('rel', 'noopener noreferrer');
       a.textContent = currentPost.title;
+      a.addEventListener('click', () => {
+        currentPost.watched = true;
+        watchedState.form.fields.watchedPost = currentPost;
+      });
       const button = document.createElement('button');
       button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
       button.setAttribute('data-id', currentPost.postId);
       button.setAttribute('data-bs-toggle', 'modal');
       button.setAttribute('data-bs-target', '#modal');
       button.textContent = i18nInstance.t('watchButton');
+      button.addEventListener('click', () => {
+        currentPost.watched = true;
+        watchedState.form.fields.watchedPost = currentPost;
+        elements.modalTitle.textContent = currentPost.title;
+        elements.modalBody.textContent = currentPost.description;
+        elements.articleButton.href = currentPost.link;
+      });
       postLi.append(a, button);
       bodyPosts.append(postLi);
       watchedState.form.fields.renderedPosts.push(currentPost);
@@ -86,22 +97,27 @@ export const normalizeData = (rssData, watchedState) => {
   const feedTitle = rssData.querySelector('title');
   const descriptionOfTitle = feedTitle.nextElementSibling;
   const feedId = uniqueId();
-  watchedState.form.fields.feeds.push({
-    id: feedId,
-    title: feedTitle.textContent,
-    description: descriptionOfTitle.textContent,
-  });
+  if (!watchedState.form.fields.feeds.some(item => item.title === feedTitle.textContent)) {
+    watchedState.form.fields.feeds.push({
+      id: feedId,
+      title: feedTitle.textContent,
+      description: descriptionOfTitle.textContent,
+    });
+  }
   const items = rssData.querySelectorAll('item');
   items.forEach((item) => {
     const itemTitle = item.querySelector('title');
     const itemLink = item.querySelector('link');
     const itemDescription = item.querySelector('description');
-    watchedState.form.fields.posts.push({
-      feedId,
-      postId: uniqueId(),
-      title: itemTitle.textContent,
-      link: itemLink.textContent,
-      description: itemDescription.textContent,
-    });
+    if (!watchedState.form.fields.posts.some(item => item.title === itemTitle.textContent)) {
+      watchedState.form.fields.posts.push({
+        feedId,
+        postId: uniqueId(),
+        title: itemTitle.textContent,
+        link: itemLink.textContent,
+        description: itemDescription.textContent,
+        watched: false,
+      });
+    }
   });
 };

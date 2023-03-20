@@ -26,6 +26,7 @@ export default () => {
         feeds: [],
         posts: [],
         renderedPosts: [],
+        watchedPost: '',
         renderedFeeds: [],
       },
     },
@@ -39,6 +40,9 @@ export default () => {
     submitBtn: document.querySelector('[type="submit"]'),
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
+    modalBody: document.querySelector('.modal-body'),
+    modalTitle: document.querySelector('.modal-title'),
+    articleButton: document.querySelector('.full-article'),
   }
   const watchedState = watch(initialState, elements, i18nInstance);
   elements.rssForm.addEventListener('submit', (e) => {
@@ -52,7 +56,6 @@ export default () => {
       } else {
         watchedState.form.processState = 'sending';
         watchedState.form.fields.currentUrl = validUrl;
-        watchedState.form.fields.urls.push(validUrl);
         e.target.reset();
         elements.input.focus();
         console.log(initialState);

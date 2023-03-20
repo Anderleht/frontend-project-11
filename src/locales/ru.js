@@ -7,5 +7,6 @@ export default {
     posts: 'Посты',
     watchButton: 'Просмотр',
     success: 'RSS успешно загружен',
+    networkError: 'Ошибка сети',
   },
 };

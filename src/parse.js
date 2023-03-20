@@ -4,8 +4,10 @@ export default (data, watchedState) => {
   const errorNode = rssData.querySelector('parsererror');
   if (errorNode) {
     watchedState.form.processError = 'notValidRss';
+    watchedState.form.processState = 'error';
     return null;
   } else {
+    watchedState.form.fields.urls.push(watchedState.form.fields.currentUrl);
     return rssData;
   }
 };

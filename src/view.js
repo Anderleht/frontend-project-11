@@ -75,7 +75,7 @@ const watchState = (state, elements, i18nInstance) => {
     case 'filling':
       elements.input.classList.remove('is-invalid');
       elements.feedback.classList.remove('text-danger');
-      elements.feedback.classList.remove('text-success')
+      elements.feedback.classList.remove('text-success');
       elements.submitBtn.disabled = false;
       elements.feedback.classList.add('text-success');
       elements.feedback.textContent = i18nInstance.t('success');
@@ -83,14 +83,14 @@ const watchState = (state, elements, i18nInstance) => {
 
     default:
       throw new Error(`Unknown process state: ${state}`);
-  };
+  }
 };
 
 export default (state, elements, i18nInstance) => {
-  const watchedState = onChange(state, ( path, value) => {
+  const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'form.processError':
-        renderErrors(elements,watchedState.form.processError, i18nInstance);
+        renderErrors(elements, watchedState.form.processError, i18nInstance);
         break;
 
       case 'form.valid':
@@ -107,7 +107,7 @@ export default (state, elements, i18nInstance) => {
         break;
 
       case 'form.fields.posts':
-        renderRssPosts(value, watchedState, elements, i18nInstance,);
+        renderRssPosts(value, watchedState, elements, i18nInstance);
         break;
 
       case 'form.processState':

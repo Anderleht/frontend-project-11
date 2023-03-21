@@ -1,4 +1,5 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { process } from 'webpack';
 
 export default {
   mode: process.env.NODE_ENV || 'development',

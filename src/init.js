@@ -43,7 +43,7 @@ export default () => {
     modalBody: document.querySelector('.modal-body'),
     modalTitle: document.querySelector('.modal-title'),
     articleButton: document.querySelector('.full-article'),
-  }
+  };
   const watchedState = watch(initialState, elements, i18nInstance);
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -52,7 +52,7 @@ export default () => {
     validate(url).then((validUrl) => {
       if (watchedState.form.fields.urls.includes(validUrl)) {
         watchedState.form.processState = 'error';
-        watchedState.form.processError = 'urlExists'
+        watchedState.form.processError = 'urlExists';
       } else {
         watchedState.form.processState = 'sending';
         watchedState.form.fields.currentUrl = validUrl;
@@ -63,6 +63,6 @@ export default () => {
     }).catch(() => {
       watchedState.form.processState = 'error';
       watchedState.form.processError = 'notValidUrl';
-    })
-  })
+    });
+  });
 };

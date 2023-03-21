@@ -1,4 +1,4 @@
-import uniqueId from 'lodash/uniqueId.js'
+import uniqueId from 'lodash/uniqueId.js';
 
 export const renderRssFeed = (rssFeed, watchedState, body) => {
   rssFeed.forEach((currentFeed) => {
@@ -16,7 +16,7 @@ export const renderRssFeed = (rssFeed, watchedState, body) => {
       feedLi.append(h, p);
       watchedState.form.fields.renderedFeeds.push(currentFeed);
     }
-  })
+  });
 };
 
 export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) => {
@@ -53,7 +53,7 @@ export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) =
       bodyPosts.append(postLi);
       watchedState.form.fields.renderedPosts.push(currentPost);
     }
-  })
+  });
 };
 
 export const initRssFeed = (elements, i18nInstance) => {
@@ -97,7 +97,7 @@ export const normalizeData = (rssData, watchedState) => {
   const feedTitle = rssData.querySelector('title');
   const descriptionOfTitle = feedTitle.nextElementSibling;
   const feedId = uniqueId();
-  if (!watchedState.form.fields.feeds.some(item => item.title === feedTitle.textContent)) {
+  if (!watchedState.form.fields.feeds.some((feed) => feed.title === feedTitle.textContent)) {
     watchedState.form.fields.feeds.push({
       id: feedId,
       title: feedTitle.textContent,
@@ -109,7 +109,7 @@ export const normalizeData = (rssData, watchedState) => {
     const itemTitle = item.querySelector('title');
     const itemLink = item.querySelector('link');
     const itemDescription = item.querySelector('description');
-    if (!watchedState.form.fields.posts.some(item => item.title === itemTitle.textContent)) {
+    if (!watchedState.form.fields.posts.some((post) => post.title === itemTitle.textContent)) {
       watchedState.form.fields.posts.push({
         feedId,
         postId: uniqueId(),

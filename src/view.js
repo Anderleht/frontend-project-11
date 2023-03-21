@@ -1,7 +1,13 @@
 import onChange from 'on-change';
 import axios from 'axios';
 import parse from './parse.js';
-import { renderRssFeed, initRssFeed, initRssPosts, normalizeData, renderRssPosts } from "./renderRss.js";
+import {
+  renderRssFeed,
+  initRssFeed,
+  initRssPosts,
+  normalizeData,
+  renderRssPosts,
+} from './renderRss.js';
 
 const renderErrors = (elements, error, i18nInstance) => {
   elements.input.classList.remove('is-invalid');
@@ -13,12 +19,12 @@ const renderErrors = (elements, error, i18nInstance) => {
 };
 
 const checkRssUpdates = (watchedState) => {
-  watchedState.form.fields.urls.forEach((url) =>{
+  watchedState.form.fields.urls.forEach((url) => {
     axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
       .then((response) => {
         const data = parse(response.data.contents, watchedState);
         normalizeData(data, watchedState);
-      })
+      });
   });
 };
 
@@ -27,7 +33,7 @@ const getData = (watchedState) => {
     .then((response) => {
       const data = parse(response.data.contents, watchedState);
       if (data !== null) {
-        watchedState.form.processState = "filling";
+        watchedState.form.processState = 'filling';
         if (watchedState.form.valid === false) {
           watchedState.form.valid = true;
         }
@@ -36,7 +42,7 @@ const getData = (watchedState) => {
     })
     .catch(() => {
       watchedState.form.processError = 'networkError';
-      watchedState.form.processState = 'error'
+      watchedState.form.processState = 'error';
     })
     .finally(() => {
       setTimeout(() => {
@@ -74,12 +80,14 @@ const watchState = (state, elements, i18nInstance) => {
       elements.feedback.classList.add('text-success');
       elements.feedback.textContent = i18nInstance.t('success');
       break;
-  }
+
+    default:
+      throw new Error(`Unknown process state: ${state}`);
+  };
 };
 
 export default (state, elements, i18nInstance) => {
   const watchedState = onChange(state, ( path, value) => {
-    console.log(path, 'path', value, 'p');
     switch (path) {
       case 'form.processError':
         renderErrors(elements,watchedState.form.processError, i18nInstance);

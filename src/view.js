@@ -18,7 +18,6 @@ const renderErrors = (elements, error, i18nInstance) => {
   elements.feedback.textContent = i18nInstance.t(error);
 };
 
-
 const getData = (watchedState) => {
   axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${watchedState.form.fields.currentUrl}`)}`)
     .then((response) => {

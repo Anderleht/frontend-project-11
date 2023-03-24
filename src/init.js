@@ -3,7 +3,7 @@ import * as yup from 'yup';
 import i18n from 'i18next';
 import resources from './locales/index.js';
 import watch from './view.js';
-import { checkRssUpdates } from "./renderRss.js";
+import { checkRssUpdates } from './renderRss.js';
 
 const schema = yup.string().trim().required().url();
 const validate = (fields) => schema.validate(fields);

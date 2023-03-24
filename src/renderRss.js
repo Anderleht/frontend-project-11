@@ -1,25 +1,6 @@
 import { uniqueId, differenceWith, isEqual } from 'lodash';
-import axios from "axios";
-import parse from "./parse.js";
-
-export const checkRssUpdates = (watchedState) => {
-  if (watchedState.form.fields.posts.length === 0) {
-    setTimeout(() => checkRssUpdates(watchedState), 5000);
-    return;
-  }
-  const promises = watchedState.form.fields.feeds.map((feed) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${feed.url}`)}`)
-    .then((response) => {
-      const data = parse(response.data.contents);
-      const posts = normalizePosts(watchedState, data);
-      const viewedPosts = watchedState.form.fields.posts;
-      const newPosts = differenceWith(posts, viewedPosts, isEqual);
-
-      watchedState.form.fields.posts.push(...newPosts);
-    }).catch((e) => {
-      console.log(e);
-    }));
-  Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
-};
+import axios from 'axios';
+import parse from './parse.js';
 
 const normalizeFeed = (watchedState, rssData) => {
   const feedTitle = rssData.querySelector('title');
@@ -150,3 +131,23 @@ export const normalizeData = (rssData, watchedState) => {
   normalizeFeed(watchedState, rssData);
   normalizePosts(watchedState, rssData);
 };
+
+export const checkRssUpdates = (watchedState) => {
+  if (watchedState.form.fields.posts.length === 0) {
+    setTimeout(() => checkRssUpdates(watchedState), 5000);
+    return;
+  }
+  const promises = watchedState.form.fields.feeds.map((feed) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${feed.url}`)}`)
+    .then((response) => {
+      const data = parse(response.data.contents);
+      const posts = normalizePosts(watchedState, data);
+      const viewedPosts = watchedState.form.fields.posts;
+      const newPosts = differenceWith(posts, viewedPosts, isEqual);
+
+      watchedState.form.fields.posts.push(...newPosts);
+    }).catch((e) => {
+      console.log(e);
+    }));
+  Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
+};
+

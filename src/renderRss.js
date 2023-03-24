@@ -1,4 +1,57 @@
-import uniqueId from 'lodash/uniqueId.js';
+import { uniqueId, differenceWith, isEqual } from 'lodash';
+import axios from "axios";
+import parse from "./parse.js";
+
+export const checkRssUpdates = (watchedState) => {
+  if (watchedState.form.fields.posts.length === 0) {
+    setTimeout(() => checkRssUpdates(watchedState), 5000);
+    return;
+  }
+  const promises = watchedState.form.fields.feeds.map((feed) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${feed.url}`)}`)
+    .then((response) => {
+      const data = parse(response.data.contents);
+      const posts = normalizePosts(watchedState, data);
+      const viewedPosts = watchedState.form.fields.posts;
+      const newPosts = differenceWith(posts, viewedPosts, isEqual);
+
+      watchedState.form.fields.posts.push(...newPosts);
+    }).catch((e) => {
+      console.log(e);
+    }));
+  Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
+};
+
+const normalizeFeed = (watchedState, rssData) => {
+  const feedTitle = rssData.querySelector('title');
+  const descriptionOfTitle = feedTitle.nextElementSibling;
+  const feedId = uniqueId();
+  if (!watchedState.form.fields.feeds.some((feed) => feed.title === feedTitle.textContent)) {
+    watchedState.form.fields.feeds.push({
+      url: watchedState.form.fields.currentUrl,
+      id: feedId,
+      title: feedTitle.textContent,
+      description: descriptionOfTitle.textContent,
+    });
+  }
+};
+
+const normalizePosts = (watchedState, rssData) => {
+  const items = rssData.querySelectorAll('item');
+  items.forEach((item) => {
+    const itemTitle = item.querySelector('title');
+    const itemLink = item.querySelector('link');
+    const itemDescription = item.querySelector('description');
+    if (!watchedState.form.fields.posts.some((post) => post.title === itemTitle.textContent)) {
+      watchedState.form.fields.posts.push({
+        postId: uniqueId(),
+        title: itemTitle.textContent,
+        link: itemLink.textContent,
+        description: itemDescription.textContent,
+        watched: false,
+      });
+    }
+  });
+};
 
 export const renderRssFeed = (rssFeed, watchedState, body) => {
   rssFeed.forEach((currentFeed) => {
@@ -94,30 +147,6 @@ export const normalizeData = (rssData, watchedState) => {
     watchedState.form.processError = 'notValidRss';
     return;
   }
-  const feedTitle = rssData.querySelector('title');
-  const descriptionOfTitle = feedTitle.nextElementSibling;
-  const feedId = uniqueId();
-  if (!watchedState.form.fields.feeds.some((feed) => feed.title === feedTitle.textContent)) {
-    watchedState.form.fields.feeds.push({
-      id: feedId,
-      title: feedTitle.textContent,
-      description: descriptionOfTitle.textContent,
-    });
-  }
-  const items = rssData.querySelectorAll('item');
-  items.forEach((item) => {
-    const itemTitle = item.querySelector('title');
-    const itemLink = item.querySelector('link');
-    const itemDescription = item.querySelector('description');
-    if (!watchedState.form.fields.posts.some((post) => post.title === itemTitle.textContent)) {
-      watchedState.form.fields.posts.push({
-        feedId,
-        postId: uniqueId(),
-        title: itemTitle.textContent,
-        link: itemLink.textContent,
-        description: itemDescription.textContent,
-        watched: false,
-      });
-    }
-  });
+  normalizeFeed(watchedState, rssData);
+  normalizePosts(watchedState, rssData);
 };

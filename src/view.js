@@ -18,15 +18,6 @@ const renderErrors = (elements, error, i18nInstance) => {
   elements.feedback.textContent = i18nInstance.t(error);
 };
 
-const checkRssUpdates = (watchedState) => {
-  watchedState.form.fields.urls.forEach((url) => {
-    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
-      .then((response) => {
-        const data = parse(response.data.contents, watchedState);
-        normalizeData(data, watchedState);
-      });
-  });
-};
 
 const getData = (watchedState) => {
   axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${watchedState.form.fields.currentUrl}`)}`)
@@ -43,11 +34,6 @@ const getData = (watchedState) => {
     .catch(() => {
       watchedState.form.processError = 'networkError';
       watchedState.form.processState = 'error';
-    })
-    .finally(() => {
-      setTimeout(() => {
-        checkRssUpdates(watchedState);
-      }, 5000);
     });
 };
 

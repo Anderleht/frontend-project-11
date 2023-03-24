@@ -150,4 +150,3 @@ export const checkRssUpdates = (watchedState) => {
     }));
   Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
 };
-

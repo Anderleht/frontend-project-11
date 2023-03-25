@@ -2,41 +2,16 @@ import { uniqueId, differenceWith, isEqual } from 'lodash';
 import axios from 'axios';
 import parse from './parse.js';
 
-const normalizeFeed = (watchedState, rssData) => {
-  const feedTitle = rssData.querySelector('title');
-  const descriptionOfTitle = feedTitle.nextElementSibling;
-  const feedId = uniqueId();
-  if (!watchedState.form.fields.feeds.some((feed) => feed.title === feedTitle.textContent)) {
-    watchedState.form.fields.feeds.push({
-      url: watchedState.form.fields.currentUrl,
-      id: feedId,
-      title: feedTitle.textContent,
-      description: descriptionOfTitle.textContent,
-    });
-  }
+const renderedElements = {
+  renderedPosts: [],
+  renderedFeeds: [],
 };
 
-const normalizePosts = (watchedState, rssData) => {
-  const items = rssData.querySelectorAll('item');
-  items.forEach((item) => {
-    const itemTitle = item.querySelector('title');
-    const itemLink = item.querySelector('link');
-    const itemDescription = item.querySelector('description');
-    if (!watchedState.form.fields.posts.some((post) => post.title === itemTitle.textContent)) {
-      watchedState.form.fields.posts.push({
-        postId: uniqueId(),
-        title: itemTitle.textContent,
-        link: itemLink.textContent,
-        description: itemDescription.textContent,
-        watched: false,
-      });
-    }
-  });
-};
+
 
 export const renderRssFeed = (rssFeed, watchedState, body) => {
   rssFeed.forEach((currentFeed) => {
-    if (!watchedState.form.fields.renderedFeeds.includes(currentFeed)) {
+    if (!renderedElements.renderedFeeds.includes(currentFeed)) {
       const bodyFeeds = body.querySelector('.list-group');
       const feedLi = document.createElement('li');
       feedLi.classList.add('list-group-item', 'border-0', 'border-end-0');
@@ -48,14 +23,14 @@ export const renderRssFeed = (rssFeed, watchedState, body) => {
       h.textContent = currentFeed.title;
       bodyFeeds.append(feedLi);
       feedLi.append(h, p);
-      watchedState.form.fields.renderedFeeds.push(currentFeed);
+      renderedElements.renderedFeeds.push(currentFeed);
     }
   });
 };
 
 export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) => {
   rssPosts.forEach((currentPost) => {
-    if (!watchedState.form.fields.renderedPosts.includes(currentPost)) {
+    if (!renderedElements.renderedPosts.includes(currentPost)) {
       const bodyPosts = elements.posts.querySelector('.list-group');
       const postLi = document.createElement('li');
       postLi.classList.add('list-group-item', 'border-0', 'border-end-0', 'd-flex', 'justify-content-between', 'align-items-start');
@@ -85,7 +60,7 @@ export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) =
       });
       postLi.append(a, button);
       bodyPosts.append(postLi);
-      watchedState.form.fields.renderedPosts.push(currentPost);
+      renderedElements.renderedPosts.push(currentPost);
     }
   });
 };
@@ -120,16 +95,6 @@ export const initRssPosts = (elements, i18nInstance) => {
   cardDiv.append(cardBody);
   cardDiv.append(ulPosts);
   cardBody.append(postsTitle);
-};
-
-export const normalizeData = (rssData, watchedState) => {
-  if (rssData === null) {
-    watchedState.form.processState = 'error';
-    watchedState.form.processError = 'notValidRss';
-    return;
-  }
-  normalizeFeed(watchedState, rssData);
-  normalizePosts(watchedState, rssData);
 };
 
 export const checkRssUpdates = (watchedState) => {

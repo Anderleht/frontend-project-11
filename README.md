@@ -2,6 +2,8 @@
 # Rss aggregation site
 ## Description
 A service for aggregating RSS feeds, with which it is convenient to read a variety of sources, such as blogs. It allows you to add an unlimited number of RSS feeds, updates them itself and adds new entries to the general feed.
+## System requirement
+node js version at least 13.0,
 ## Installation
 ```
 git clone git@github.com:Anderleht/frontend-project-46.git

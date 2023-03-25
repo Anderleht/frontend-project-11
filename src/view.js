@@ -5,7 +5,6 @@ import {
   renderRssFeed,
   initRssFeed,
   initRssPosts,
-  normalizeData,
   renderRssPosts,
 } from './renderRss.js';
 
@@ -28,7 +27,6 @@ const getData = (watchedState) => {
           watchedState.form.valid = true;
         }
       }
-      normalizeData(data, watchedState);
     })
     .catch(() => {
       watchedState.form.processError = 'networkError';
@@ -50,7 +48,6 @@ const watchState = (state, elements, i18nInstance) => {
       elements.feedback.classList.remove('text-success');
       elements.feedback.classList.remove('text-danger');
       elements.feedback.textContent = '';
-      elements.submitBtn.disabled = true;
       break;
 
     case 'error':
@@ -83,15 +80,15 @@ export default (state, elements, i18nInstance) => {
         initRssPosts(elements, i18nInstance);
         break;
 
-      case 'form.fields.currentUrl':
+      case 'form.uiState.currentUrl':
         getData(watchedState);
         break;
 
-      case 'form.fields.feeds':
+      case 'form.uiState.feeds':
         renderRssFeed(value, watchedState, elements.feeds);
         break;
 
-      case 'form.fields.posts':
+      case 'form.uiState.posts':
         renderRssPosts(value, watchedState, elements, i18nInstance);
         break;
 
@@ -99,7 +96,7 @@ export default (state, elements, i18nInstance) => {
         watchState(watchedState.form.processState, elements, i18nInstance);
         break;
 
-      case 'form.fields.watchedPost':
+      case 'form.uiState.watchedPost':
         makePostWatched(watchedState.form.fields.watchedPost);
         break;
 

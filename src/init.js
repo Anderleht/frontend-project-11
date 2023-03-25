@@ -1,4 +1,3 @@
-import 'bootstrap';
 import * as yup from 'yup';
 import i18n from 'i18next';
 import resources from './locales/index.js';
@@ -21,14 +20,11 @@ export default () => {
       valid: false,
       processState: 'filling',
       processError: null,
-      fields: {
+      uiState: {
         currentUrl: '',
-        urls: [],
         feeds: [],
         posts: [],
-        renderedPosts: [],
         watchedPost: '',
-        renderedFeeds: [],
       },
     },
   };
@@ -51,8 +47,10 @@ export default () => {
     e.preventDefault();
     const data = new FormData(e.target);
     const url = data.get('url');
+    elements.submitBtn.disabled = true;
+    const usedUrls = watchedState.form.fields.feeds.map((feed) => feed.url);
     validate(url).then((validUrl) => {
-      if (watchedState.form.fields.urls.includes(validUrl)) {
+      if (usedUrls.includes(validUrl)) {
         watchedState.form.processState = 'error';
         watchedState.form.processError = 'urlExists';
       } else {
@@ -60,7 +58,6 @@ export default () => {
         watchedState.form.fields.currentUrl = validUrl;
         e.target.reset();
         elements.input.focus();
-        console.log(initialState);
       }
     }).catch(() => {
       watchedState.form.processState = 'error';

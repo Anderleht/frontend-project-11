@@ -7,7 +7,12 @@ const renderedElements = {
   renderedFeeds: [],
 };
 
-
+export const buildUrl = (url) => {
+  const proxy = 'https://allorigins.hexlet.app';
+  const proxyURL = new URL(`${proxy}/get?url=${encodeURIComponent(url)}`);
+  proxyURL.searchParams.append('disableCache', 'true');
+  return proxyURL.href;
+};
 
 export const renderRssFeed = (rssFeed, watchedState, body) => {
   rssFeed.forEach((currentFeed) => {
@@ -37,13 +42,12 @@ export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) =
       const a = document.createElement('a');
       a.href = currentPost.link;
       a.classList.add('fw-bold');
-      a.setAttribute('data-id', currentPost.postId);
+      a.setAttribute('data-id', currentPost.id);
       a.setAttribute('target', '_blank');
       a.setAttribute('rel', 'noopener noreferrer');
       a.textContent = currentPost.title;
       a.addEventListener('click', () => {
-        currentPost.watched = true;
-        watchedState.form.fields.watchedPost = currentPost;
+        watchedState.data.watchedPosts.push(currentPost);
       });
       const button = document.createElement('button');
       button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -52,8 +56,7 @@ export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) =
       button.setAttribute('data-bs-target', '#modal');
       button.textContent = i18nInstance.t('watchButton');
       button.addEventListener('click', () => {
-        currentPost.watched = true;
-        watchedState.form.fields.watchedPost = currentPost;
+        watchedState.data.watchedPosts.push(currentPost);
         elements.modalTitle.textContent = currentPost.title;
         elements.modalBody.textContent = currentPost.description;
         elements.articleButton.href = currentPost.link;
@@ -98,20 +101,59 @@ export const initRssPosts = (elements, i18nInstance) => {
 };
 
 export const checkRssUpdates = (watchedState) => {
-  if (watchedState.form.fields.posts.length === 0) {
+  if (watchedState.data.posts.length === 0) {
     setTimeout(() => checkRssUpdates(watchedState), 5000);
     return;
   }
-  const promises = watchedState.form.fields.feeds.map((feed) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${feed.url}`)}`)
+  const promises = watchedState.data.feeds.map((feed) => axios.get(buildUrl(feed.url))
     .then((response) => {
       const data = parse(response.data.contents);
-      const posts = normalizePosts(watchedState, data);
-      const viewedPosts = watchedState.form.fields.posts;
-      const newPosts = differenceWith(posts, viewedPosts, isEqual);
+      const { posts } = data;
 
-      watchedState.form.fields.posts.push(...newPosts);
+      const viewedPosts = watchedState.data.posts.map((post) => {
+        const { title, link, description } = post;
+        return { title, link, description };
+      });
+
+      const newPosts = differenceWith(posts, viewedPosts, isEqual);
+      const postsWithId = newPosts.map((post) => {
+        const id = uniqueId();
+        post.id = id;
+        return post;
+      });
+
+      watchedState.data.posts.push(...postsWithId);
     }).catch((e) => {
       console.log(e);
     }));
   Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
+};
+
+export const getData = (watchedState) => {
+  axios.get(buildUrl(watchedState.data.currentUrl))
+    .then((response) => {
+      const data = parse(response.data.contents);
+      if (data !== null) {
+        watchedState.uiState.processState = 'filling';
+        if (watchedState.uiState.valid === false) {
+          watchedState.uiState.valid = true;
+        }
+        const { feed, posts } = data;
+        feed['id'] = uniqueId();
+        feed['url'] = watchedState.data.currentUrl;
+        watchedState.data.feeds.push(feed);
+        posts.forEach((post) => {
+          post['id'] = uniqueId();
+          watchedState.data.posts.push(post);
+        });
+      } else {
+        watchedState.uiState.processState = 'error';
+        watchedState.uiState.processError = 'notValidRss';
+      }
+    })
+    .catch((e) => {
+      console.log(e)
+      watchedState.uiState.processError = 'networkError';
+      watchedState.uiState.processState = 'error';
+    });
 };

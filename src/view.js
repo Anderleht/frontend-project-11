@@ -1,12 +1,12 @@
 import onChange from 'on-change';
-import axios from 'axios';
-import parse from './parse.js';
 import {
   renderRssFeed,
   initRssFeed,
   initRssPosts,
   renderRssPosts,
+  getData,
 } from './renderRss.js';
+
 
 const renderErrors = (elements, error, i18nInstance) => {
   elements.input.classList.remove('is-invalid');
@@ -17,28 +17,12 @@ const renderErrors = (elements, error, i18nInstance) => {
   elements.feedback.textContent = i18nInstance.t(error);
 };
 
-const getData = (watchedState) => {
-  axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${watchedState.form.fields.currentUrl}`)}`)
-    .then((response) => {
-      const data = parse(response.data.contents, watchedState);
-      if (data !== null) {
-        watchedState.form.processState = 'filling';
-        if (watchedState.form.valid === false) {
-          watchedState.form.valid = true;
-        }
-      }
-    })
-    .catch(() => {
-      watchedState.form.processError = 'networkError';
-      watchedState.form.processState = 'error';
-    });
-};
-
-const makePostWatched = (post) => {
-  console.log(post);
-  const watchedPost = document.querySelector(`a[data-id="${post.postId}"]`);
-  watchedPost.classList.remove('fw-bold');
-  watchedPost.classList.add('fw-normal');
+const makePostWatched = (posts) => {
+  posts.forEach((post) => {
+    const watchedPost = document.querySelector(`a[data-id="${post.id}"]`);
+    watchedPost.classList.remove('fw-bold');
+    watchedPost.classList.add('fw-normal');
+  });
 };
 
 const watchState = (state, elements, i18nInstance) => {
@@ -71,38 +55,37 @@ const watchState = (state, elements, i18nInstance) => {
 export default (state, elements, i18nInstance) => {
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
-      case 'form.processError':
-        renderErrors(elements, watchedState.form.processError, i18nInstance);
+      case 'uiState.processError':
+        renderErrors(elements, watchedState.uiState.processError, i18nInstance);
         break;
 
-      case 'form.valid':
+      case 'uiState.valid':
         initRssFeed(elements, i18nInstance);
         initRssPosts(elements, i18nInstance);
         break;
 
-      case 'form.uiState.currentUrl':
+      case 'data.currentUrl':
         getData(watchedState);
         break;
 
-      case 'form.uiState.feeds':
+      case 'data.feeds':
         renderRssFeed(value, watchedState, elements.feeds);
         break;
 
-      case 'form.uiState.posts':
+      case 'data.posts':
         renderRssPosts(value, watchedState, elements, i18nInstance);
         break;
 
-      case 'form.processState':
-        watchState(watchedState.form.processState, elements, i18nInstance);
+      case 'uiState.processState':
+        watchState(watchedState.uiState.processState, elements, i18nInstance);
         break;
 
-      case 'form.uiState.watchedPost':
-        makePostWatched(watchedState.form.fields.watchedPost);
+      case 'data.watchedPosts':
+        makePostWatched(watchedState.data.watchedPosts);
         break;
 
       default:
         break;
-        // throw new Error(`Unknown process state: ${watchedState.form.processState}`);
     }
   });
   return watchedState;

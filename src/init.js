@@ -16,20 +16,20 @@ export default () => {
     resources,
   });
   const initialState = {
-    form: {
+    uiState: {
       valid: false,
       processState: 'filling',
       processError: null,
-      uiState: {
-        currentUrl: '',
-        feeds: [],
-        posts: [],
-        watchedPost: '',
-      },
+    },
+    data: {
+      currentUrl: '',
+      feeds: [],
+      posts: [],
+      watchedPosts: [],
     },
   };
 
-  const elements = {
+const elements = {
     rssForm: document.querySelector('.rss-form'),
     content: document.querySelector('.container-fluid'),
     input: document.querySelector('#url-input'),
@@ -48,20 +48,21 @@ export default () => {
     const data = new FormData(e.target);
     const url = data.get('url');
     elements.submitBtn.disabled = true;
-    const usedUrls = watchedState.form.fields.feeds.map((feed) => feed.url);
     validate(url).then((validUrl) => {
-      if (usedUrls.includes(validUrl)) {
-        watchedState.form.processState = 'error';
-        watchedState.form.processError = 'urlExists';
-      } else {
-        watchedState.form.processState = 'sending';
-        watchedState.form.fields.currentUrl = validUrl;
+      if (watchedState.data.feeds.length !== 0) {
+        const usedUrls = watchedState.data.feeds.map((feed) => feed.url);
+        if (usedUrls.includes(validUrl)) {
+          watchedState.uiState.processState = 'error';
+          watchedState.uiState.processError = 'urlExists';
+        }
+      }
+        watchedState.uiState.processState = 'sending';
+        watchedState.data.currentUrl = validUrl;
         e.target.reset();
         elements.input.focus();
-      }
     }).catch(() => {
-      watchedState.form.processState = 'error';
-      watchedState.form.processError = 'notValidUrl';
+      watchedState.uiState.processState = 'error';
+      watchedState.uiState.processError = 'notValidUrl';
     });
   });
 };

@@ -31,5 +31,5 @@ export default (data) => {
   }
   const feed = extractFeeds(rssData);
   const posts = extractPosts(rssData);
-  return  { feed, posts };
+  return { feed, posts };
 };

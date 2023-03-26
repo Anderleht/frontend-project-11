@@ -29,7 +29,7 @@ export default () => {
     },
   };
 
-const elements = {
+  const elements = {
     rssForm: document.querySelector('.rss-form'),
     content: document.querySelector('.container-fluid'),
     input: document.querySelector('#url-input'),

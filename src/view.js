@@ -7,7 +7,6 @@ import {
   getData,
 } from './renderRss.js';
 
-
 const renderErrors = (elements, error, i18nInstance) => {
   elements.input.classList.remove('is-invalid');
   elements.feedback.classList.remove('text-success');

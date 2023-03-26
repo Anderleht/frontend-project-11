@@ -139,11 +139,11 @@ export const getData = (watchedState) => {
           watchedState.uiState.valid = true;
         }
         const { feed, posts } = data;
-        feed['id'] = uniqueId();
-        feed['url'] = watchedState.data.currentUrl;
+        feed.id = uniqueId();
+        feed.url = watchedState.data.currentUrl;
         watchedState.data.feeds.push(feed);
         posts.forEach((post) => {
-          post['id'] = uniqueId();
+          post.id = uniqueId();
           watchedState.data.posts.push(post);
         });
       } else {
@@ -152,7 +152,7 @@ export const getData = (watchedState) => {
       }
     })
     .catch((e) => {
-      console.log(e)
+      console.log(e);
       watchedState.uiState.processError = 'networkError';
       watchedState.uiState.processState = 'error';
     });

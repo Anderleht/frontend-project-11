@@ -49,17 +49,16 @@ const elements = {
     const url = data.get('url');
     elements.submitBtn.disabled = true;
     validate(url).then((validUrl) => {
-      if (watchedState.data.feeds.length !== 0) {
-        const usedUrls = watchedState.data.feeds.map((feed) => feed.url);
-        if (usedUrls.includes(validUrl)) {
-          watchedState.uiState.processState = 'error';
-          watchedState.uiState.processError = 'urlExists';
-        }
-      }
+      const usedUrls = watchedState.data.feeds.map((feed) => feed.url);
+      if (usedUrls.includes(validUrl)) {
+        watchedState.uiState.processState = 'error';
+        watchedState.uiState.processError = 'urlExists';
+      } else {
         watchedState.uiState.processState = 'sending';
         watchedState.data.currentUrl = validUrl;
         e.target.reset();
         elements.input.focus();
+      }
     }).catch(() => {
       watchedState.uiState.processState = 'error';
       watchedState.uiState.processError = 'notValidUrl';

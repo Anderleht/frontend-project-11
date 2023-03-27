@@ -47,7 +47,6 @@ export default () => {
     e.preventDefault();
     const data = new FormData(e.target);
     const url = data.get('url');
-    elements.submitBtn.disabled = true;
     validate(url).then((validUrl) => {
       const usedUrls = watchedState.data.feeds.map((feed) => feed.url);
       if (usedUrls.includes(validUrl)) {

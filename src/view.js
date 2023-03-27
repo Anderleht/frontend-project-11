@@ -8,9 +8,7 @@ import {
 } from './renderRss.js';
 
 const renderErrors = (elements, error, i18nInstance) => {
-  elements.input.classList.remove('is-invalid');
   elements.feedback.classList.remove('text-success');
-  elements.feedback.classList.remove('text-danger');
   elements.input.classList.add('is-invalid');
   elements.feedback.classList.add('text-danger');
   elements.feedback.textContent = i18nInstance.t(error);
@@ -27,6 +25,7 @@ const makePostWatched = (posts) => {
 const watchState = (state, elements, i18nInstance) => {
   switch (state) {
     case 'sending':
+      elements.submitBtn.disabled = true;
       elements.input.classList.remove('is-invalid');
       elements.feedback.classList.remove('text-success');
       elements.feedback.classList.remove('text-danger');

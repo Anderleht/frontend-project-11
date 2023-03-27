@@ -1,3 +1,4 @@
+![Actions Status](https://github.com/Anderleht/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9ab9fb24f7d8299dc643/maintainability)](https://codeclimate.com/github/Anderleht/frontend-project-11/maintainability)
 # Rss aggregation site
 ## Description

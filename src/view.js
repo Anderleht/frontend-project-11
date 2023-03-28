@@ -4,7 +4,6 @@ import {
   initRssFeed,
   initRssPosts,
   renderRssPosts,
-  getData,
 } from './renderRss.js';
 
 const renderErrors = (elements, error, i18nInstance) => {
@@ -36,13 +35,21 @@ const watchState = (state, elements, i18nInstance) => {
       elements.submitBtn.disabled = false;
       break;
 
+    case 'success':
+      elements.feedback.classList.remove('text-danger');
+      elements.input.classList.remove('is-invalid');
+      elements.input.value = '';
+      elements.input.focus();
+      elements.submitBtn.disabled = false;
+      elements.feedback.classList.add('text-success');
+      elements.feedback.textContent = i18nInstance.t('success');
+      break;
+
     case 'filling':
       elements.input.classList.remove('is-invalid');
       elements.feedback.classList.remove('text-danger');
       elements.feedback.classList.remove('text-success');
       elements.submitBtn.disabled = false;
-      elements.feedback.classList.add('text-success');
-      elements.feedback.textContent = i18nInstance.t('success');
       break;
 
     default:
@@ -60,10 +67,6 @@ export default (state, elements, i18nInstance) => {
       case 'uiState.valid':
         initRssFeed(elements, i18nInstance);
         initRssPosts(elements, i18nInstance);
-        break;
-
-      case 'data.currentUrl':
-        getData(watchedState);
         break;
 
       case 'data.feeds':

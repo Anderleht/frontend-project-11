@@ -11,4 +11,4 @@ git clone git@github.com:Anderleht/frontend-project-46.git
 in main folder of project: make install, make build;
 ```
 ## Current state of site
-[Link to stie](https://frontend-project-11-silk-nine.vercel.app/)
+[Link to stie](https://frontend-project-11-anderleht.vercel.app/)

@@ -2,10 +2,49 @@ import * as yup from 'yup';
 import i18n from 'i18next';
 import resources from './locales/index.js';
 import watch from './view.js';
-import { checkRssUpdates } from './renderRss.js';
+import { buildUrl, checkRssUpdates } from "./renderRss.js";
+import axios from "axios";
+import parse from "./parse.js";
+import { uniqueId } from "lodash";
+
+const switchError = (error, watchedState) => {
+  if (watchedState.uiState.processState === 'error') {
+    watchedState.uiState.processState = 'filling';
+    watchedState.uiState.processError = null;
+  }
+  watchedState.uiState.processState = 'error';
+  watchedState.uiState.processError = error;
+};
 
 const schema = yup.string().trim().required().url();
 const validate = (fields) => schema.validate(fields);
+
+export const getData = (url, watchedState) => {
+  axios.get(buildUrl(url))
+    .then((response) => {
+      const data = parse(response.data.contents);
+      if (data !== null) {
+        watchedState.uiState.processState = 'success';
+        if (watchedState.uiState.valid === false) {
+          watchedState.uiState.valid = true;
+        }
+        const { feed, posts } = data;
+        feed.id = uniqueId();
+        feed.url = url;
+        watchedState.data.feeds.push(feed);
+        posts.forEach((post) => {
+          post.id = uniqueId();
+          watchedState.data.posts.push(post);
+        });
+      } else {
+        switchError('notValidRss', watchedState);
+      }
+    })
+    .catch((e) => {
+      console.log(e);
+      switchError('networkError', watchedState);
+    });
+};
 
 export default () => {
   const defLang = 'ru';
@@ -22,7 +61,6 @@ export default () => {
       processError: null,
     },
     data: {
-      currentUrl: '',
       feeds: [],
       posts: [],
       watchedPosts: [],
@@ -50,17 +88,13 @@ export default () => {
     validate(url).then((validUrl) => {
       const usedUrls = watchedState.data.feeds.map((feed) => feed.url);
       if (usedUrls.includes(validUrl)) {
-        watchedState.uiState.processState = 'error';
-        watchedState.uiState.processError = 'urlExists';
+        switchError('urlExists', watchedState);
       } else {
         watchedState.uiState.processState = 'sending';
-        watchedState.data.currentUrl = validUrl;
-        e.target.reset();
-        elements.input.focus();
+        getData(validUrl, watchedState);
       }
     }).catch(() => {
-      watchedState.uiState.processState = 'error';
-      watchedState.uiState.processError = 'notValidUrl';
+      switchError('notValidUrl', watchedState);
     });
   });
 };

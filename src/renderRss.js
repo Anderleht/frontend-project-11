@@ -128,32 +128,3 @@ export const checkRssUpdates = (watchedState) => {
     }));
   Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
 };
-
-export const getData = (watchedState) => {
-  axios.get(buildUrl(watchedState.data.currentUrl))
-    .then((response) => {
-      const data = parse(response.data.contents);
-      if (data !== null) {
-        watchedState.uiState.processState = 'filling';
-        if (watchedState.uiState.valid === false) {
-          watchedState.uiState.valid = true;
-        }
-        const { feed, posts } = data;
-        feed.id = uniqueId();
-        feed.url = watchedState.data.currentUrl;
-        watchedState.data.feeds.push(feed);
-        posts.forEach((post) => {
-          post.id = uniqueId();
-          watchedState.data.posts.push(post);
-        });
-      } else {
-        watchedState.uiState.processState = 'error';
-        watchedState.uiState.processError = 'notValidRss';
-      }
-    })
-    .catch((e) => {
-      console.log(e);
-      watchedState.uiState.processError = 'networkError';
-      watchedState.uiState.processState = 'error';
-    });
-};

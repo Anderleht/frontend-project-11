@@ -1,11 +1,11 @@
 import * as yup from 'yup';
+import axios from 'axios';
+import { uniqueId } from 'lodash';
 import i18n from 'i18next';
 import resources from './locales/index.js';
 import watch from './view.js';
-import { buildUrl, checkRssUpdates } from "./renderRss.js";
-import axios from "axios";
-import parse from "./parse.js";
-import { uniqueId } from "lodash";
+import { buildUrl, checkRssUpdates } from './renderRss.js';
+import parse from './parse.js';
 
 const switchError = (error, watchedState) => {
   if (watchedState.uiState.processState === 'error') {

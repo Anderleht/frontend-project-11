@@ -27,7 +27,7 @@ export default (data) => {
   const rssData = parser.parseFromString(data, 'application/xml');
   const errorNode = rssData.querySelector('parsererror');
   if (errorNode) {
-    return null;
+    throw new Error('notValidRss');
   }
   const feed = extractFeeds(rssData);
   const posts = extractPosts(rssData);

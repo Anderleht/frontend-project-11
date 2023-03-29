@@ -47,7 +47,7 @@ export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) =
       a.setAttribute('rel', 'noopener noreferrer');
       a.textContent = currentPost.title;
       a.addEventListener('click', () => {
-        watchedState.data.watchedPosts.push(currentPost);
+        watchedState.uiState.watchedPostsIds.push(currentPost.id);
       });
       const button = document.createElement('button');
       button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -56,10 +56,8 @@ export const renderRssPosts = (rssPosts, watchedState, elements, i18nInstance) =
       button.setAttribute('data-bs-target', '#modal');
       button.textContent = i18nInstance.t('watchButton');
       button.addEventListener('click', () => {
-        watchedState.data.watchedPosts.push(currentPost);
-        elements.modalTitle.textContent = currentPost.title;
-        elements.modalBody.textContent = currentPost.description;
-        elements.articleButton.href = currentPost.link;
+        watchedState.uiState.watchedPostsIds.push(currentPost.id);
+        watchedState.uiState.showedPostInModal = currentPost.id;
       });
       postLi.append(a, button);
       bodyPosts.append(postLi);

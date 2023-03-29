@@ -7,63 +7,62 @@ import watch from './view.js';
 import { buildUrl, checkRssUpdates } from './renderRss.js';
 import parse from './parse.js';
 
-const switchError = (error, watchedState) => {
-  if (watchedState.uiState.processState === 'error') {
-    watchedState.uiState.processState = 'filling';
-    watchedState.uiState.processError = null;
-  }
-  watchedState.uiState.processState = 'error';
-  watchedState.uiState.processError = error;
+const sendError = (error, watchedState) => {
+  watchedState.process.processState = 'error';
+  watchedState.process.processError = error;
 };
 
-const schema = yup.string().trim().required().url();
-const validate = (fields) => schema.validate(fields);
+
+const validate = (newUrl, urls) => {
+  const schema = yup.string().trim().required().url().notOneOf(urls);
+  return  schema.validate(newUrl);
+};
 
 export const getData = (url, watchedState) => {
   axios.get(buildUrl(url))
     .then((response) => {
       const data = parse(response.data.contents);
-      if (data !== null) {
-        watchedState.uiState.processState = 'success';
-        if (watchedState.uiState.valid === false) {
-          watchedState.uiState.valid = true;
-        }
-        const { feed, posts } = data;
-        feed.id = uniqueId();
-        feed.url = url;
-        watchedState.data.feeds.push(feed);
-        posts.forEach((post) => {
-          post.id = uniqueId();
-          watchedState.data.posts.push(post);
-        });
-      } else {
-        switchError('notValidRss', watchedState);
-      }
+      watchedState.process.processState = 'success';
+      watchedState.process.valid = true;
+      const { feed, posts } = data;
+      feed.id = uniqueId();
+      feed.url = url;
+      watchedState.data.feeds.push(feed);
+      const postWithId = posts.map((post) => {
+        post.id = uniqueId();
+        return post;
+      });
+      watchedState.data.posts = [...postWithId];
     })
     .catch((e) => {
-      console.log(e);
-      switchError('networkError', watchedState);
+      if (e.message === 'notValidRss') {
+        sendError(e.message, watchedState);
+      } else {
+        sendError('networkError', watchedState);
+      }
     });
 };
 
 export default () => {
-  const defLang = 'ru';
+  const defaultLanguage = 'ru';
   const i18nInstance = i18n.createInstance();
   i18nInstance.init({
-    lng: defLang,
-    debug: false,
+    lng: defaultLanguage,
     resources,
   });
   const initialState = {
-    uiState: {
+    process: {
       valid: false,
       processState: 'filling',
       processError: null,
     },
+    uiState: {
+      watchedPostsIds: [],
+      showedPostInModal: null,
+    },
     data: {
       feeds: [],
       posts: [],
-      watchedPosts: [],
     },
   };
 
@@ -85,16 +84,12 @@ export default () => {
     e.preventDefault();
     const data = new FormData(e.target);
     const url = data.get('url');
-    validate(url).then((validUrl) => {
-      const usedUrls = watchedState.data.feeds.map((feed) => feed.url);
-      if (usedUrls.includes(validUrl)) {
-        switchError('urlExists', watchedState);
-      } else {
-        watchedState.uiState.processState = 'sending';
-        getData(validUrl, watchedState);
-      }
-    }).catch(() => {
-      switchError('notValidUrl', watchedState);
+    const usedUrls = watchedState.data.feeds.map((feed) => feed.url);
+    validate(url, usedUrls).then(() => {
+      watchedState.process.processState = 'sending';
+      getData(url, watchedState);
+    }).catch((e) => {
+      sendError(e.type, watchedState);
     });
   });
 };

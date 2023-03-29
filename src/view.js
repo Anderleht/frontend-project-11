@@ -13,9 +13,16 @@ const renderErrors = (elements, error, i18nInstance) => {
   elements.feedback.textContent = i18nInstance.t(error);
 };
 
-const makePostWatched = (posts) => {
-  posts.forEach((post) => {
-    const watchedPost = document.querySelector(`a[data-id="${post.id}"]`);
+const showPostInModal = (postId, elements, posts) => {
+  const currentPost = posts.find((post) => post.id === postId);
+  elements.modalTitle.textContent = currentPost.title;
+  elements.modalBody.textContent = currentPost.description;
+  elements.articleButton.href = currentPost.link;
+};
+
+const makePostWatched = (postsIds) => {
+  postsIds.forEach((postId) => {
+    const watchedPost = document.querySelector(`a[data-id="${postId}"]`);
     watchedPost.classList.remove('fw-bold');
     watchedPost.classList.add('fw-normal');
   });
@@ -60,11 +67,11 @@ const watchState = (state, elements, i18nInstance) => {
 export default (state, elements, i18nInstance) => {
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
-      case 'uiState.processError':
-        renderErrors(elements, watchedState.uiState.processError, i18nInstance);
+      case 'process.processError':
+        renderErrors(elements, watchedState.process.processError, i18nInstance);
         break;
 
-      case 'uiState.valid':
+      case 'process.valid':
         initRssFeed(elements, i18nInstance);
         initRssPosts(elements, i18nInstance);
         break;
@@ -77,16 +84,20 @@ export default (state, elements, i18nInstance) => {
         renderRssPosts(value, watchedState, elements, i18nInstance);
         break;
 
-      case 'uiState.processState':
-        watchState(watchedState.uiState.processState, elements, i18nInstance);
+      case 'process.processState':
+        watchState(watchedState.process.processState, elements, i18nInstance);
         break;
 
-      case 'data.watchedPosts':
-        makePostWatched(watchedState.data.watchedPosts);
+      case 'uiState.watchedPostsIds':
+        makePostWatched(watchedState.uiState.watchedPostsIds);
+        break;
+
+      case 'uiState.showedPostInModal':
+        showPostInModal(watchedState.uiState.showedPostInModal, elements, watchedState.data.posts);
         break;
 
       default:
-        break;
+        throw new Error(`Unknown state ${path}`);
     }
   });
   return watchedState;

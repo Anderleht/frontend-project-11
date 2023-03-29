@@ -12,10 +12,14 @@ const sendError = (error, watchedState) => {
   watchedState.process.processError = error;
 };
 
-
 const validate = (newUrl, urls) => {
-  const schema = yup.string().trim().required().url().notOneOf(urls);
-  return  schema.validate(newUrl);
+  const schema = yup
+    .string()
+    .trim()
+    .required()
+    .url()
+    .notOneOf(urls);
+  return schema.validate(newUrl);
 };
 
 export const getData = (url, watchedState) => {
@@ -88,8 +92,8 @@ export default () => {
     validate(url, usedUrls).then(() => {
       watchedState.process.processState = 'sending';
       getData(url, watchedState);
-    }).catch((e) => {
-      sendError(e.type, watchedState);
+    }).catch((error) => {
+      sendError(error.type, watchedState);
     });
   });
 };

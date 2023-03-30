@@ -7,7 +7,7 @@ import watch from './view.js';
 import { buildUrl, checkRssUpdates } from './renderRss.js';
 import parse from './parse.js';
 
-const sendError = (error, watchedState) => {
+const changeError = (error, watchedState) => {
   watchedState.process.processState = 'error';
   watchedState.process.processError = error;
 };
@@ -40,9 +40,9 @@ export const getData = (url, watchedState) => {
     })
     .catch((e) => {
       if (e.message === 'notValidRss') {
-        sendError(e.message, watchedState);
+        changeError(e.message, watchedState);
       } else {
-        sendError('networkError', watchedState);
+        changeError('networkError', watchedState);
       }
     });
 };
@@ -93,7 +93,7 @@ export default () => {
       watchedState.process.processState = 'sending';
       getData(url, watchedState);
     }).catch((error) => {
-      sendError(error.type, watchedState);
+      changeError(error.type, watchedState);
     });
   });
 };

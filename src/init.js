@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import { differenceWith, isEqual, uniqueId } from "lodash";
+import { differenceWith, isEqual, uniqueId } from 'lodash';
 import i18n from 'i18next';
 import resources from './locales/index.js';
 import watch from './view.js';

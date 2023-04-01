@@ -3,7 +3,6 @@ const renderedElements = {
   renderedFeeds: [],
 };
 
-
 export const renderRssFeed = (rssFeed, watchedState, body) => {
   rssFeed.forEach((currentFeed) => {
     if (!renderedElements.renderedFeeds.includes(currentFeed)) {
@@ -87,4 +86,3 @@ export const initRssPosts = (elements, i18nInstance) => {
   cardDiv.append(ulPosts);
   cardBody.append(postsTitle);
 };
-

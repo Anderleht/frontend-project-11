@@ -1,18 +1,8 @@
-import { uniqueId, differenceWith, isEqual } from 'lodash';
-import axios from 'axios';
-import parse from './parse.js';
-
 const renderedElements = {
   renderedPosts: [],
   renderedFeeds: [],
 };
 
-export const buildUrl = (url) => {
-  const proxy = 'https://allorigins.hexlet.app';
-  const proxyURL = new URL(`${proxy}/get?url=${encodeURIComponent(url)}`);
-  proxyURL.searchParams.append('disableCache', 'true');
-  return proxyURL.href;
-};
 
 export const renderRssFeed = (rssFeed, watchedState, body) => {
   rssFeed.forEach((currentFeed) => {
@@ -98,31 +88,3 @@ export const initRssPosts = (elements, i18nInstance) => {
   cardBody.append(postsTitle);
 };
 
-export const checkRssUpdates = (watchedState) => {
-  if (watchedState.data.posts.length === 0) {
-    setTimeout(() => checkRssUpdates(watchedState), 5000);
-    return;
-  }
-  const promises = watchedState.data.feeds.map((feed) => axios.get(buildUrl(feed.url))
-    .then((response) => {
-      const data = parse(response.data.contents);
-      const { posts } = data;
-
-      const viewedPosts = watchedState.data.posts.map((post) => {
-        const { title, link, description } = post;
-        return { title, link, description };
-      });
-
-      const newPosts = differenceWith(posts, viewedPosts, isEqual);
-      const postsWithId = newPosts.map((post) => {
-        const id = uniqueId();
-        post.id = id;
-        return post;
-      });
-
-      watchedState.data.posts.push(...postsWithId);
-    }).catch((e) => {
-      console.log(e);
-    }));
-  Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
-};

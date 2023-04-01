@@ -47,6 +47,8 @@ const watchState = (state, elements, i18nInstance) => {
       elements.input.classList.remove('is-invalid');
       elements.input.value = '';
       elements.input.focus();
+      initRssFeed(elements, i18nInstance);
+      initRssPosts(elements, i18nInstance);
       elements.submitBtn.disabled = false;
       elements.feedback.classList.add('text-success');
       elements.feedback.textContent = i18nInstance.t('success');
@@ -69,11 +71,6 @@ export default (state, elements, i18nInstance) => {
     switch (path) {
       case 'process.processError':
         renderErrors(elements, watchedState.process.processError, i18nInstance);
-        break;
-
-      case 'process.valid':
-        initRssFeed(elements, i18nInstance);
-        initRssPosts(elements, i18nInstance);
         break;
 
       case 'data.feeds':

@@ -1,11 +1,17 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import { uniqueId } from 'lodash';
+import { differenceWith, isEqual, uniqueId } from "lodash";
 import i18n from 'i18next';
 import resources from './locales/index.js';
 import watch from './view.js';
-import { buildUrl, checkRssUpdates } from './renderRss.js';
 import parse from './parse.js';
+
+const buildUrl = (url) => {
+  const proxy = 'https://allorigins.hexlet.app';
+  const proxyURL = new URL(`${proxy}/get?url=${encodeURIComponent(url)}`);
+  proxyURL.searchParams.append('disableCache', 'true');
+  return proxyURL.href;
+};
 
 const changeError = (error, watchedState) => {
   watchedState.process.processState = 'error';
@@ -27,7 +33,6 @@ export const getData = (url, watchedState) => {
     .then((response) => {
       const data = parse(response.data.contents);
       watchedState.process.processState = 'success';
-      watchedState.process.valid = true;
       const { feed, posts } = data;
       feed.id = uniqueId();
       feed.url = url;
@@ -56,7 +61,6 @@ export default () => {
   });
   const initialState = {
     process: {
-      valid: false,
       processState: 'filling',
       processError: null,
     },
@@ -82,6 +86,36 @@ export default () => {
     modalTitle: document.querySelector('.modal-title'),
     articleButton: document.querySelector('.full-article'),
   };
+
+  const checkRssUpdates = (watchedState) => {
+    if (watchedState.data.posts.length === 0) {
+      setTimeout(() => checkRssUpdates(watchedState), 5000);
+      return;
+    }
+    const promises = watchedState.data.feeds.map((feed) => axios.get(buildUrl(feed.url))
+      .then((response) => {
+        const data = parse(response.data.contents);
+        const { posts } = data;
+
+        const viewedPosts = watchedState.data.posts.map((post) => {
+          const { title, link, description } = post;
+          return { title, link, description };
+        });
+
+        const newPosts = differenceWith(posts, viewedPosts, isEqual);
+        const postsWithId = newPosts.map((post) => {
+          const id = uniqueId();
+          post.id = id;
+          return post;
+        });
+
+        watchedState.data.posts.push(...postsWithId);
+      }).catch((e) => {
+        console.log(e);
+      }));
+    Promise.all(promises).finally(setTimeout(() => checkRssUpdates(watchedState), 5000));
+  };
+
   const watchedState = watch(initialState, elements, i18nInstance);
   checkRssUpdates(watchedState);
   elements.rssForm.addEventListener('submit', (e) => {
